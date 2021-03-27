@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace ConsoleApp1
+namespace NotebookApp
 {
     public class Contact
     {
         public int Id { get; set; }
-        [Required(ErrorMessage ="Не введена фамилия")]
+        [Required(ErrorMessage = "Не введена фамилия")]
         [StringLength(15, MinimumLength = 3, ErrorMessage = "Недопустимая длина фамилии")]
         [RegularExpression(@"[А-Яа-яЁё-]*", ErrorMessage = "В фамилии должны быть только русские буквы")]
         public string Surename { get; set; }
@@ -36,15 +37,42 @@ namespace ConsoleApp1
 
         public Contact(string surename, string name, string secondname, string phoneNum, string country, string birthday, string organization, string position, string note)
         {
-            Surename = surename; 
-            Name = name; 
-            Secondname = secondname; 
-            PhoneNum = phoneNum; 
+            Surename = surename;
+            Name = name;
+            Secondname = secondname;
+            PhoneNum = phoneNum;
             Country = country;
             Birthday = birthday;
             Organization = organization;
             Position = position;
             Note = note;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("a. ID: " + Id)
+                .AppendLine("b. Фамилия: " + Surename)
+                .AppendLine("c. Имя: " + Name)
+                .AppendLine("d. Отчество: " + Secondname)
+                .AppendLine("e. Номер телефона: " + PhoneNum)
+                .AppendLine("f. Страна: " + Country)
+                .AppendLine("g. День рождения: " + Birthday)
+                .AppendLine("h. Организация: " + Organization)
+                .AppendLine("i. Должность: " + Position)
+                .AppendLine("j. Примечание: " + Note)
+                .AppendLine("");
+            return sb.ToString();
+        }
+
+        public string ShortDescription()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("a. Фамилия: " + Surename)
+                .AppendLine("b. Имя: " + Name)
+                .AppendLine("c. Номер телефона: " + PhoneNum)
+                .AppendLine("");
+            return sb.ToString();
         }
     }
 }

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
-namespace ConsoleApp1
+namespace NotebookApp
 {
     public class Notebook
     {
@@ -33,20 +34,10 @@ namespace ConsoleApp1
                 {
                     case 1:
                         Contact man = CreateContact();
-                        var results = new List<ValidationResult>();
-                        var context = new ValidationContext(man);
-                        if (!Validator.TryValidateObject(man, context, results, true))
+                        if (ValidateModel(man))
                         {
-                            foreach (var error in results)
-                            {
-                                Console.WriteLine(error.ErrorMessage);
-                            }
-                        }
-                        else if (Validator.TryValidateObject(man, context, results, true))
-                        {
-                            man.Id = i;
+                            man.Id = i++;
                             notebook.Add(man);
-                            i++;
                         }
                         break;
 
@@ -62,15 +53,11 @@ namespace ConsoleApp1
                         break;
                         
                     case 3:
-                        Console.WriteLine("Введите ID контакта");
-                        int removeId = int.Parse(Console.ReadLine());
-                        RemoveContact(removeId, notebook);
+                        RemoveContact(GetContactId(), notebook);
                         break;
 
                     case 4:
-                        Console.WriteLine("Введите ID контакта");
-                        int showId = int.Parse(Console.ReadLine());
-                        ShowContact(showId, notebook);
+                        ShowContact(GetContactId(), notebook);
                         break;
 
                     case 5:
@@ -85,61 +72,61 @@ namespace ConsoleApp1
             
         }
 
+        private static int GetContactId()
+        {
+            Console.WriteLine("Введите ID контакта");
+            while(true)
+            {
+                if (int.TryParse(Console.ReadLine(), out int id))
+                {
+                    return id;
+                }
+                else
+                {
+                    Console.WriteLine("Введён неверный ID. Повторите ввод:");
+                }
+            }
+        }
+
         private static void RemoveContact(int id, List<Contact> notebook)
         {
-                if (id < 0)
-                {
-                    Console.WriteLine("ID должно быть положительным или 0");
-                }
-
-                if (notebook.Count == 0)
-                {
-                    Console.WriteLine("Контактов нет");
-                }
-
-                if (id > notebook.Count - 1)
-                {
-                    Console.WriteLine("Такого номера не существует");
-                }
-
+            if (CheckContactId(id, notebook.Count))
+            {
                 notebook.RemoveAt(id);
+            } 
         }
 
         private static void ShowContact(int id, List<Contact> notebook)
         {
+            if (CheckContactId(id, notebook.Count))
+            {
+                Console.WriteLine();
+                Console.WriteLine(notebook.Single(x => x.Id == id));
+            }
+        }
+
+        private static bool CheckContactId(int id, int count)
+        {
+            bool flag = true;
             if (id < 0)
             {
                 Console.WriteLine("ID должно быть положительным или 0");
+                flag = false;
             }
 
-            if (notebook.Count == 0)
+            if (count == 0)
             {
                 Console.WriteLine("Контактов нет");
+                flag = false;
             }
 
-            if (id > notebook.Count - 1)
+            if (id > count - 1)
             {
                 Console.WriteLine("Такого номера не существует");
+                flag = false;
             }
 
-            Console.WriteLine();
-            foreach(Contact contact in notebook)
-            {
-                if (contact.Id == id)
-                {
-                    Console.WriteLine("a. ID: " + contact.Id);
-                    Console.WriteLine("b. Фамилия: " + contact.Surename);
-                    Console.WriteLine("c. Имя: " + contact.Name);
-                    Console.WriteLine("d. Отчество: " + contact.Secondname);
-                    Console.WriteLine("e. Номер телефона: " + contact.PhoneNum);
-                    Console.WriteLine("f. Страна: " + contact.Country);
-                    Console.WriteLine("g. День рождения: " + contact.Birthday);
-                    Console.WriteLine("h. Организация: " + contact.Organization);
-                    Console.WriteLine("i. Должность: " + contact.Position);
-                    Console.WriteLine("j. Примечание: " + contact.Note);
-                    Console.WriteLine();
-                }
-            }
+            return flag;
         }
         private static void ShowContacts(List<Contact> notebook)
         {
@@ -152,10 +139,7 @@ namespace ConsoleApp1
                 Console.WriteLine();
                 foreach (Contact contact in notebook)
                 {
-                    Console.WriteLine("a. Фамилия: " + contact.Surename);
-                    Console.WriteLine("b. Имя: " + contact.Name);
-                    Console.WriteLine("c. Номер телефона: " + contact.PhoneNum);
-                    Console.WriteLine();
+                   Console.WriteLine(contact.ShortDescription());
                 }
             }
         }
@@ -219,18 +203,11 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новую фамилию (обязательно):");
-                                string surenameEdit = Console.ReadLine();
                                 string oldSurename = editContact.Surename;
-                                editContact.Surename = surenameEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                editContact.Surename = Console.ReadLine();
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Surename = oldSurename;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -242,18 +219,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новое имя (обязательно):");
-                                string nameEdit = Console.ReadLine();
                                 string oldName = editContact.Name;
-                                editContact.Surename = nameEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                string nameEdit = Console.ReadLine();
+                                editContact.Name = nameEdit;
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Name = oldName;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -265,18 +236,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новое отчество (необязательно):");
-                                string secondnameEdit = Console.ReadLine();
                                 string oldSecondname = editContact.Secondname;
+                                string secondnameEdit = Console.ReadLine();
                                 editContact.Secondname = secondnameEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Secondname = oldSecondname;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -288,18 +253,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новый номер телефона (обязательно, только цифры):");
-                                string phoneNumEdit = Console.ReadLine();
                                 string oldPhoneNum = editContact.PhoneNum;
+                                string phoneNumEdit = Console.ReadLine();
                                 editContact.PhoneNum = phoneNumEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.PhoneNum = oldPhoneNum;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -311,18 +270,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новую страну (обязательно):");
-                                string countryEdit = Console.ReadLine();
                                 string oldCountry = editContact.Country;
+                                string countryEdit = Console.ReadLine();
                                 editContact.Country = countryEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Country = oldCountry;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -334,18 +287,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новую дату рождения (необязательно, разделять знаком точки):");
-                                string birthdayEdit = Console.ReadLine();
                                 string oldBirthday = editContact.Birthday;
+                                string birthdayEdit = Console.ReadLine();
                                 editContact.Birthday = birthdayEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Birthday = oldBirthday;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -357,18 +304,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новую организацию (необязательно):");
-                                string organizationEdit = Console.ReadLine();
                                 string oldOrganiazation = editContact.Organization;
+                                string organizationEdit = Console.ReadLine();
                                 editContact.Organization = organizationEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Organization = oldOrganiazation;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -380,18 +321,12 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новую должность (необязательно):");
-                                string positionEdit = Console.ReadLine();
                                 string oldPosition = editContact.Position;
+                                string positionEdit = Console.ReadLine();
                                 editContact.Position = positionEdit;
-                                var resultsEd = new List<ValidationResult>();
-                                var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Position = oldPosition;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -403,18 +338,14 @@ namespace ConsoleApp1
                             if (editContact.Id == editId)
                             {
                                 Console.WriteLine("Введите новое примечание (необязательно):");
-                                string noteEdit = Console.ReadLine();
                                 string oldNote = editContact.Note;
+                                string noteEdit = Console.ReadLine();
                                 editContact.Note = noteEdit;
                                 var resultsEd = new List<ValidationResult>();
                                 var contextEd = new ValidationContext(editContact);
-                                if (!Validator.TryValidateObject(editContact, contextEd, resultsEd, true))
+                                if (ValidateModel(editContact) == false)
                                 {
                                     editContact.Note = oldNote;
-                                    foreach (var error in resultsEd)
-                                    {
-                                        Console.WriteLine(error.ErrorMessage);
-                                    }
                                 }
                             }
                         }
@@ -427,7 +358,24 @@ namespace ConsoleApp1
                         Console.WriteLine("Данный пункт меню отсутствует");
                         break;
                 }
+
+
             }
+        }
+
+        private static bool ValidateModel(Contact contact)
+        {
+            var resultsEd = new List<ValidationResult>();
+            var contextEd = new ValidationContext(contact);
+            if (!Validator.TryValidateObject(contact, contextEd, resultsEd, true))
+            {
+                foreach (var error in resultsEd)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+                return false;
+            }
+            return true;
         }
     }
 }
