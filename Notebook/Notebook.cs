@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,12 +13,7 @@ namespace NotebookApp
         {
             while (true)
             {
-                Console.WriteLine("Выберите команду:");
-                Console.WriteLine("1. Создать контакт");
-                Console.WriteLine("2. Редактирование контакта");
-                Console.WriteLine("3. Удаление контакта");
-                Console.WriteLine("4. Просмотр контакта");
-                Console.WriteLine("5. Просмотр всех контактов");
+                Console.WriteLine(ShowMainMenu());
                 int pharagraphMenu = GetMenuPharagraph();
                 switch (pharagraphMenu)
                 {
@@ -31,28 +27,28 @@ namespace NotebookApp
                         break;
 
                     case 2:
-                        if (EmptyNotebook(notebook) == false)
+                        if (IsEmptyNotebook(notebook) == false)
                         {
-                           EditContacts(notebook);
+                            EditContacts(notebook);
                         }
                         break;
 
                     case 3:
-                        if (EmptyNotebook(notebook) == false)
+                        if (IsEmptyNotebook(notebook) == false)
                         {
                             RemoveContact(GetContactId(), notebook);
                         }
                         break;
 
                     case 4:
-                        if (EmptyNotebook(notebook) == false)
+                        if (IsEmptyNotebook(notebook) == false)
                         {
                             ShowContact(GetContactId(), notebook);
                         }
                         break;
 
                     case 5:
-                        if (EmptyNotebook(notebook) == false)
+                        if (IsEmptyNotebook(notebook) == false)
                         {
                             ShowContacts(notebook);
                         }
@@ -65,18 +61,38 @@ namespace NotebookApp
             }
 
         }
-
-        private static bool EmptyNotebook(List<Contact> notebook)
+        #region Interfaces
+        private static string ShowMainMenu()
         {
-            bool flag = false;
-            if (notebook.Count == 0)
-            {
-                Console.WriteLine("Нет контактов");
-                flag = true;
-                return flag;
-            }
-            return flag;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Выберите команду:")
+                .AppendLine("1. Создать контакт")
+                .AppendLine("2. Редактирование контакта")
+                .AppendLine("3.Удаление контакта")
+                .AppendLine("4. Просмотр контакта")
+                .AppendLine("5. Просмотр всех контактов");
+            return sb.ToString();
         }
+
+        private static string ShowEditMenu()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Выберете какое поле требуется изменить:")
+                .AppendLine("1. Фамилия")
+                .AppendLine("2. Имя")
+                .AppendLine("3. Отчество")
+                .AppendLine("4. Номер телефона")
+                .AppendLine("5. Страна")
+                .AppendLine("6. Дата рождения")
+                .AppendLine("7. Организация")
+                .AppendLine("8. Должность")
+                .AppendLine("9. Примечание")
+                .AppendLine("10. Назад в меню");
+            return sb.ToString();
+        }
+        #endregion
+
+        #region Getters
         private static int GetContactId()
         {
             Console.WriteLine("Введите ID контакта");
@@ -108,24 +124,9 @@ namespace NotebookApp
                 }
             }
         }
+        #endregion
 
-        private static void RemoveContact(int id, List<Contact> notebook)
-        {
-            if (CheckContactId(id, notebook.Count))
-            {
-                notebook.RemoveAt(id);
-            }
-        }
-
-        private static void ShowContact(int id, List<Contact> notebook)
-        {
-            if (CheckContactId(id, notebook.Count))
-            {
-                Console.WriteLine();
-                Console.WriteLine(notebook.Single(x => x.Id == id));
-            }
-        }
-
+        #region Checking and Validation
         private static bool CheckContactId(int id, int count)
         {
             bool flag = true;
@@ -149,7 +150,50 @@ namespace NotebookApp
 
             return flag;
         }
+        private static bool IsEmptyNotebook(List<Contact> notebook)
+        {
+            if (notebook.Count == 0)
+            {
+                Console.WriteLine("Нет контактов");
+                return true;
+            }
+            return false;
+        }
 
+        private static bool ValidateModel(Contact contact)
+        {
+            var resultsEd = new List<ValidationResult>();
+            var contextEd = new ValidationContext(contact);
+            if (!Validator.TryValidateObject(contact, contextEd, resultsEd, true))
+            {
+                foreach (var error in resultsEd)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+                return false;
+            }
+            return true;
+        }
+
+        #endregion
+
+        #region Actions
+        private static void RemoveContact(int id, List<Contact> notebook)
+        {
+            if (CheckContactId(id, notebook.Count))
+            {
+                notebook.RemoveAt(id);
+            }
+        }
+
+        private static void ShowContact(int id, List<Contact> notebook)
+        {
+            if (CheckContactId(id, notebook.Count))
+            {
+                Console.WriteLine();
+                Console.WriteLine(notebook.Single(x => x.Id == id));
+            }
+        }
         private static void ShowContacts(List<Contact> notebook)
         {
             if (notebook.Count == 0)
@@ -165,7 +209,6 @@ namespace NotebookApp
                 }
             }
         }
-
         private static Contact CreateContact()
         {
             Console.WriteLine("Введите фамилию (обязательно):");
@@ -195,17 +238,7 @@ namespace NotebookApp
             if (notebook.Count != 0)
             {
                 int editId = GetContactId();
-                Console.WriteLine("Выберете какое поле требуется изменить:");
-                Console.WriteLine("1. Фамилия");
-                Console.WriteLine("2. Имя");
-                Console.WriteLine("3. Отчество");
-                Console.WriteLine("4. Номер телефона");
-                Console.WriteLine("5. Страна");
-                Console.WriteLine("6. Дата рождения");
-                Console.WriteLine("7. Организация");
-                Console.WriteLine("8. Должность");
-                Console.WriteLine("9. Примечание");
-                Console.WriteLine("10. Назад в меню");
+                Console.WriteLine(ShowEditMenu());
                 int pharagraphEdit = GetMenuPharagraph();
                 Contact editContact = notebook.Single(x => x.Id == editId);
                 switch (pharagraphEdit)
@@ -230,117 +263,78 @@ namespace NotebookApp
                         }
                         break;
 
-                    /*case 3:
-                        foreach (Contact editContact in notebook)
+                    case 3:
+                        Console.WriteLine("Введите новое отчество (необязательно):");
+                        string oldSecondname = editContact.Secondname;
+                        editContact.Secondname = Console.ReadLine();
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новое отчество (необязательно):");
-                                string oldSecondname = editContact.Secondname;
-                                editContact.Secondname = Console.ReadLine();
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.Secondname = oldSecondname;
-                                }
-                            }
+                            editContact.Secondname = oldSecondname;
                         }
+
                         break;
 
                     case 4:
-                        foreach (Contact editContact in notebook)
+                        Console.WriteLine("Введите новый номер телефона (обязательно, только цифры):");
+                        string oldPhoneNum = editContact.PhoneNum;
+                        editContact.PhoneNum = Console.ReadLine();
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новый номер телефона (обязательно, только цифры):");
-                                string oldPhoneNum = editContact.PhoneNum;
-                                editContact.PhoneNum = Console.ReadLine();
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.PhoneNum = oldPhoneNum;
-                                }
-                            }
+                            editContact.PhoneNum = oldPhoneNum;
                         }
+
                         break;
 
                     case 5:
-                        foreach (Contact editContact in notebook)
+                        Console.WriteLine("Введите новую страну (обязательно):");
+                        string oldCountry = editContact.Country;
+                        editContact.Country = Console.ReadLine(); ;
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новую страну (обязательно):");
-                                string oldCountry = editContact.Country;
-                                editContact.Country = Console.ReadLine(); ;
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.Country = oldCountry;
-                                }
-                            }
+                            editContact.Country = oldCountry;
                         }
+
                         break;
 
                     case 6:
-                        foreach (Contact editContact in notebook)
+                        Console.WriteLine("Введите новую дату рождения (необязательно, разделять знаком точки):");
+                        string oldBirthday = editContact.Birthday;
+                        editContact.Birthday = Console.ReadLine();
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новую дату рождения (необязательно, разделять знаком точки):");
-                                string oldBirthday = editContact.Birthday;
-                                editContact.Birthday = Console.ReadLine();
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.Birthday = oldBirthday;
-                                }
-                            }
+                            editContact.Birthday = oldBirthday;
                         }
                         break;
 
                     case 7:
-                        foreach (Contact editContact in notebook)
+                        Console.WriteLine("Введите новую организацию (необязательно):");
+                        string oldOrganiazation = editContact.Organization;
+                        editContact.Organization = Console.ReadLine();
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новую организацию (необязательно):");
-                                string oldOrganiazation = editContact.Organization;
-                                editContact.Organization = Console.ReadLine();
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.Organization = oldOrganiazation;
-                                }
-                            }
+                            editContact.Organization = oldOrganiazation;
                         }
                         break;
 
                     case 8:
-                        foreach (Contact editContact in notebook)
+                        Console.WriteLine("Введите новую должность (необязательно):");
+                        string oldPosition = editContact.Position;
+                        editContact.Position = Console.ReadLine();
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новую должность (необязательно):");
-                                string oldPosition = editContact.Position;
-                                editContact.Position = Console.ReadLine();
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.Position = oldPosition;
-                                }
-                            }
+                            editContact.Position = oldPosition;
                         }
                         break;
 
                     case 9:
-                        foreach (Contact editContact in notebook)
+                        Console.WriteLine("Введите новое примечание (необязательно):");
+                        string oldNote = editContact.Note;
+                        editContact.Note = Console.ReadLine();
+                        if (ValidateModel(editContact) == false)
                         {
-                            if (editContact.Id == editId)
-                            {
-                                Console.WriteLine("Введите новое примечание (необязательно):");
-                                string oldNote = editContact.Note;
-                                editContact.Note = Console.ReadLine();
-                                if (ValidateModel(editContact) == false)
-                                {
-                                    editContact.Note = oldNote;
-                                }
-                            }
+                            editContact.Note = oldNote;
                         }
-                        break;*/
+                        break;
 
                     case 10:
                         break;
@@ -349,25 +343,12 @@ namespace NotebookApp
                         Console.WriteLine("Данный пункт меню отсутствует");
                         break;
                 }
-
-
             }
         }
 
-        private static bool ValidateModel(Contact contact)
-        {
-            var resultsEd = new List<ValidationResult>();
-            var contextEd = new ValidationContext(contact);
-            if (!Validator.TryValidateObject(contact, contextEd, resultsEd, true))
-            {
-                foreach (var error in resultsEd)
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
-                return false;
-            }
-            return true;
-        }
+        #endregion
+
+        
     }
 }
 
