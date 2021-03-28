@@ -15,6 +15,7 @@ namespace NotebookApp
             {
                 Console.WriteLine(ShowMainMenu());
                 int pharagraphMenu = GetMenuPharagraph();
+                int i = 0;
                 switch (pharagraphMenu)
                 {
                     case 1:
@@ -22,7 +23,7 @@ namespace NotebookApp
                         if (ValidateModel(man))
                         {
                             notebook.Add(man);
-                            man.Id = notebook.Count;
+                            man.Id = i++;
                         }
                         break;
 
@@ -68,7 +69,7 @@ namespace NotebookApp
             sb.AppendLine("Выберите команду:")
                 .AppendLine("1. Создать контакт")
                 .AppendLine("2. Редактирование контакта")
-                .AppendLine("3.Удаление контакта")
+                .AppendLine("3. Удаление контакта")
                 .AppendLine("4. Просмотр контакта")
                 .AppendLine("5. Просмотр всех контактов");
             return sb.ToString();
